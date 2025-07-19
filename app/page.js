@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import FontGroupList from "@/components/home/FontGroupList";
 import LoadingPage from "@/components/global/LoadingPage";
-import { set } from "date-fns";
 import FontTable from "@/components/home/FontTable";
 
 export default function FontGroupSystem() {
@@ -195,34 +194,7 @@ export default function FontGroupSystem() {
           onChange={(e) => setFontGroupName(e.target.value)}
           className="border border-gray-300 rounded p-2 w-full"
         />
-        {/* {rows.map((row, index) => (
-          <div key={row.id} className="flex items-center gap-4 my-5">
-            <select
-              className="border px-4 py-2 rounded w-full"
-              value={row.fontId}
-              onChange={(e) => handleFontChange(row.id, e.target.value)}
-            >
-              <option value="">-- Select Font --</option>
-              {fonts.map((font) => (
-                <option
-                  key={font._id}
-                  value={font._id}
-                  style={{ fontFamily: font.name }}
-                >
-                  {font.name}
-                </option>
-              ))}
-            </select>
-            {rows.length > 1 && (
-              <button
-                onClick={() => handleDeleteRow(row.id)}
-                className="text-red-600 hover:underline text-sm"
-              >
-                Delete
-              </button>
-            )}
-          </div>
-        ))} */}
+
         {rows.map((row, index) => (
           <div key={row.id} className="flex items-center gap-4 my-5">
             <div className="relative w-full">
