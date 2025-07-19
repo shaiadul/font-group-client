@@ -5,6 +5,7 @@ import axios from "axios";
 import FontGroupList from "@/components/home/FontGroupList";
 import LoadingPage from "@/components/global/LoadingPage";
 import { set } from "date-fns";
+import FontTable from "@/components/home/FontTable";
 
 export default function FontGroupSystem() {
   const [fonts, setFonts] = useState([]);
@@ -13,6 +14,7 @@ export default function FontGroupSystem() {
   const [fontGroups, setFontGroups] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
+  const [rows, setRows] = useState([{ id: Date.now(), fontId: "" }]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,10 +46,7 @@ export default function FontGroupSystem() {
     const formData = new FormData();
     formData.append("font", file);
     setUploading(true);
-    await axios.post(
-      `${process.env.NEXT_PUBLIC_API_URL}/fonts`,
-      formData
-    );
+    await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/fonts`, formData);
     setUploading(false);
     fetchFonts();
     setLoading(false);
@@ -61,9 +60,12 @@ export default function FontGroupSystem() {
 
   const createFontGroup = async () => {
     setLoading(true);
-    if (selectedFonts.length < 2 || !fontGroupName)
-      return alert("Select at least 2 fonts and enter group name.");
+    const selectedFonts = rows.map((row) => row.fontId).filter(Boolean);
 
+    if (selectedFonts.length < 2 || !fontGroupName) {
+      setLoading(false);
+      return alert("Select at least 2 fonts and enter group name.");
+    }
     if (editingGroup) {
       await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL}/font-groups/${editingGroup._id}`,
@@ -88,6 +90,10 @@ export default function FontGroupSystem() {
     setLoading(false);
   };
 
+  const handleDeleteFont = (id) => {
+    setFonts((prev) => prev.filter((font) => font._id !== id));
+  };
+
   function handleEdit(group) {
     setLoading(true);
     setEditingGroup(group);
@@ -103,6 +109,21 @@ export default function FontGroupSystem() {
     fetchFontGroups();
     setLoading(false);
   }
+  const handleAddRow = () => {
+    setRows((prev) => [...prev, { id: Date.now(), fontId: "" }]);
+  };
+
+  const handleDeleteRow = (id) => {
+    setRows((prev) => prev.filter((row) => row.id !== id));
+  };
+
+  const handleFontChange = (id, selectedFontId) => {
+    setRows((prev) =>
+      prev.map((row) =>
+        row.id === id ? { ...row, fontId: selectedFontId } : row
+      )
+    );
+  };
 
   if (loading) {
     return <LoadingPage />;
@@ -155,49 +176,116 @@ export default function FontGroupSystem() {
           />
 
           {uploading && (
-            <p className="text-blue-600 mt-2 text-sm">Uploading...</p>
+            <p className="text-emerald-600 mt-2 text-sm">Uploading...</p>
           )}
         </div>
 
         {uploading && <p className="text-emerald-600 mt-2">Uploading...</p>}
       </div>
 
-      <div className="mb-6">
-        <label className="block font-medium mb-2">Select Fonts:</label>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {fonts.map((font) => (
-            <div
-              key={font._id}
-              className={`border p-3 rounded cursor-pointer text-center transition-all ${
-                selectedFonts.includes(font._id)
-                  ? "bg-emerald-200 border-emerald-500"
-                  : ""
-              }`}
-              onClick={() => toggleFontSelect(font._id)}
-              style={{ fontFamily: font.name }}
-            >
-              {font.name}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      
+      <FontTable fonts={fonts} onDelete={handleDeleteFont} />
+      <div className="space-y-6"></div>
 
       <div className="mb-6">
+        <h2 className="text-2xl font-bold mb-6">Create Font Group</h2>
         <input
           type="text"
           placeholder="Font Group Name"
           value={fontGroupName}
           onChange={(e) => setFontGroupName(e.target.value)}
-          className="border border-gray-300 rounded p-2 w-full mb-2"
+          className="border border-gray-300 rounded p-2 w-full"
         />
-        <button
-          onClick={createFontGroup}
-          className="bg-emerald-600 text-white py-2 px-4 rounded hover:bg-emerald-700"
-        >
-          {editingGroup ? "Update Font Group" : "Create Font Group"}
-        </button>
+        {/* {rows.map((row, index) => (
+          <div key={row.id} className="flex items-center gap-4 my-5">
+            <select
+              className="border px-4 py-2 rounded w-full"
+              value={row.fontId}
+              onChange={(e) => handleFontChange(row.id, e.target.value)}
+            >
+              <option value="">-- Select Font --</option>
+              {fonts.map((font) => (
+                <option
+                  key={font._id}
+                  value={font._id}
+                  style={{ fontFamily: font.name }}
+                >
+                  {font.name}
+                </option>
+              ))}
+            </select>
+            {rows.length > 1 && (
+              <button
+                onClick={() => handleDeleteRow(row.id)}
+                className="text-red-600 hover:underline text-sm"
+              >
+                Delete
+              </button>
+            )}
+          </div>
+        ))} */}
+        {rows.map((row, index) => (
+          <div key={row.id} className="flex items-center gap-4 my-5">
+            <div className="relative w-full">
+              <select
+                className="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-10 rounded leading-tight focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                value={row.fontId}
+                onChange={(e) => handleFontChange(row.id, e.target.value)}
+              >
+                <option value="">-- Select Font --</option>
+                {fonts.map((font) => (
+                  <option
+                    key={font._id}
+                    value={font._id}
+                    style={{ fontFamily: font.name }}
+                  >
+                    {font.name}
+                  </option>
+                ))}
+              </select>
+
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            {rows.length > 1 && (
+              <button
+                onClick={() => handleDeleteRow(row.id)}
+                className="text-red-600 hover:underline text-sm"
+              >
+                Delete
+              </button>
+            )}
+          </div>
+        ))}
+
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <button
+            onClick={createFontGroup}
+            className="bg-emerald-600 text-white py-2 px-4 rounded hover:bg-emerald-700"
+          >
+            {editingGroup ? "Update Font Group" : "Create Font Group"}
+          </button>
+          <button
+            onClick={handleAddRow}
+            type="button"
+            className="text-emerald-600 border border-emerald-600 px-1 py-2 rounded"
+          >
+            + Add Row
+          </button>
+        </div>
       </div>
 
       <FontGroupList

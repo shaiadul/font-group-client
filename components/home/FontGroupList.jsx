@@ -51,13 +51,13 @@ export default function FontGroupTable({ fontGroups, onEdit, onDelete }) {
                 <td className="px-6 py-4 whitespace-nowrap text-center space-x-3">
                   <button
                     onClick={() => onEdit(group)}
-                    className="text-blue-600 hover:text-blue-800 font-medium"
+                    className="text-emerald-600 hover:text-emerald-800 font-medium"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => onDelete(group._id)}
-                    className="text-red-600 hover:text-red-800 font-medium"
+                    className="text-red-600 hover:text-red-800 font-medium cursor-pointer"
                   >
                     Delete
                   </button>
